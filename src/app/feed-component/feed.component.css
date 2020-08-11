@@ -1,0 +1,30 @@
+.container {
+  margin: 20px 40px 20px 40px;
+}
+
+.container article {
+  border-bottom: #555555 1px solid;
+}
+
+.container img {
+  height: 250px;
+  margin-bottom: 10px;
+}
+
+article p {
+  padding: 10px 0;
+}
+
+.user {
+  font-weight: 600;
+  color: gray;
+  display: flex;
+  align-items: center;
+}
+
+.user img {
+  width: 32px;
+  height: 32px;
+  margin: 10px;
+  border-radius: 50%;
+}

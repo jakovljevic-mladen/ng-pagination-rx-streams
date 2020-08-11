@@ -1,0 +1,12 @@
+<div class="container">
+  <article *ngFor="let article of feed$ | async">
+    <div class="user">
+      <img [src]="article.user.avatar" [alt]="article.user.name + 'avatar'">
+      {{article.user.name}}
+    </div>
+    <p *ngIf="article.type === 'text'">{{article.text}}</p>
+    <img *ngIf="article.type === 'image'"
+         [src]="article.imageURL"
+         [alt]="article.imageURL">
+  </article>
+</div>
