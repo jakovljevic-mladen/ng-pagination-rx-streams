@@ -1,12 +1,12 @@
-.container {
+.articles {
   margin: 20px 40px 20px 40px;
 }
 
-.container article {
+.articles article {
   border-bottom: #555555 1px solid;
 }
 
-.container img {
+.articles img {
   height: 250px;
   margin-bottom: 10px;
 }

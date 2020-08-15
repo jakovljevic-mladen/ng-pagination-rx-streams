@@ -1,4 +1,4 @@
-<div class="container">
+<div #articles class="articles">
   <article *ngFor="let article of feed$ | async">
     <div class="user">
       <img [src]="article.user.avatar" [alt]="article.user.name + 'avatar'">
