@@ -1,21 +1,32 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 
-import { BehaviorSubject, Observable } from 'rxjs';
-import { exhaustMap, share, scan } from 'rxjs/operators';
+import { BehaviorSubject, Observable, defer, EMPTY, NEVER } from 'rxjs';
+import { exhaustMap, share, scan, catchError, map, tap } from 'rxjs/operators';
 
-import { FakeFeedResponse } from '../models';
+import { FakeFeedResponse, FeedItem } from '../models';
 
 @Injectable({
   providedIn: 'root'
 })
 export class FeedService {
 
-  getFeed$ = this.http.get<FakeFeedResponse[]>('/feed').pipe(share());
+  private nextPageURL = '/feed';
+
+  getFeed$: Observable<FeedItem[]> = defer(() => {
+    return this.nextPageURL
+      ? this.http.get<FakeFeedResponse>(this.nextPageURL)
+      : NEVER;
+  }).pipe(
+    catchError(() => /* Potentially handle this.nextPageURL here */EMPTY),
+    tap(response => this.nextPageURL = response.nextPageURL),
+    map(response => response.items),
+    share()
+  );
 
   refresh$ = new BehaviorSubject(null);
 
-  feed$: Observable<FakeFeedResponse[]> = this.refresh$.pipe(
+  feed$: Observable<FeedItem[]> = this.refresh$.pipe(
     exhaustMap(() => this.getFeed$),
     scan((acc, value) => acc.concat(value), [])
   );
