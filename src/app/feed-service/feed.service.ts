@@ -12,19 +12,28 @@ import { FakeFeedResponse, FeedItem } from '../models';
 export class FeedService {
 
   private nextPageURL = '/feed';
+  private loadingSubject$ = new BehaviorSubject(false);
 
   getFeed$: Observable<FeedItem[]> = defer(() => {
-    return this.nextPageURL
-      ? this.http.get<FakeFeedResponse>(this.nextPageURL)
-      : NEVER;
+    if (this.nextPageURL) {
+      this.loadingSubject$.next(true);
+      return this.http.get<FakeFeedResponse>(this.nextPageURL);
+    } else {
+      return NEVER;
+    }
   }).pipe(
     catchError(() => /* Potentially handle this.nextPageURL here */EMPTY),
-    tap(response => this.nextPageURL = response.nextPageURL),
+    tap(response => {
+      this.nextPageURL = response.nextPageURL;
+      this.loadingSubject$.next(false);
+    }),
     map(response => response.items),
     share()
   );
 
   refresh$ = new BehaviorSubject(null);
+
+  loading$: Observable<boolean> = this.loadingSubject$.asObservable();
 
   feed$: Observable<FeedItem[]> = this.refresh$.pipe(
     exhaustMap(() => this.getFeed$),

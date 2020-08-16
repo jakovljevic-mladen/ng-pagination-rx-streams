@@ -1,7 +1,7 @@
 import { Component, OnInit, OnDestroy, ViewChild, ElementRef } from '@angular/core';
 
 import { Subscription, fromEvent } from 'rxjs';
-import { map, filter, take, repeat } from 'rxjs/operators';
+import { map, filter, take, repeat, delay } from 'rxjs/operators';
 
 import { FeedService } from '../feed-service/feed.service';
 
@@ -36,6 +36,8 @@ export class FeedComponent implements OnInit, OnDestroy {
     );
 
   feed$ = this.feedService.feed$;
+
+  loading$ = this.feedService.loading$.pipe(delay(10));
 
   constructor(private feedService: FeedService) {
   }
