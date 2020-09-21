@@ -14,8 +14,9 @@ export class FeedService {
   private nextPage: number | null = 1;
   private filter: FeedFilter;
   private loadingSubject$ = new BehaviorSubject(false);
+  private shouldReset = false;
 
-  getFeed$: Observable<FeedItem[]> = defer(() => {
+  private getFeed$: Observable<FeedItem[]> = defer(() => {
     if (this.nextPage) {
       this.loadingSubject$.next(true);
       const url = appendQuery('/feed', { page: this.nextPage, feedFilter: this.filter.feedFilter });
@@ -55,8 +56,6 @@ export class FeedService {
       return acc.concat(value);
     }, [])
   );
-
-  shouldReset = false;
 
   constructor(private http: HttpClient) {
   }
