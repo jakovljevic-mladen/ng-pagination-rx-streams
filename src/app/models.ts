@@ -1,5 +1,11 @@
+export type FeedFilterType = '' | 'onlyImages' | 'onlyText'; // An empty string because of <option value="">All<...>
+
+export interface FeedFilter {
+  feedFilter: FeedFilterType;
+}
+
 export interface FakeFeedResponse {
-  nextPageURL: string | null;
+  nextPage: number | null;
   items: FeedItem[];
 }
 

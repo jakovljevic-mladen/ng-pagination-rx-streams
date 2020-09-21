@@ -1,10 +1,22 @@
 <div class="loading" *ngIf="loading$ | async">
   Loading...
 </div>
+<div class="filter">
+  <form #form="ngForm">
+    <label>
+      Feed options
+      <select name="feedFilter" ngModel>
+        <option value="">All</option>
+        <option value="onlyImages">Only Images</option>
+        <option value="onlyText">Only Text</option>
+      </select>
+    </label>
+  </form>
+</div>
 <div #articles class="articles">
   <article *ngFor="let article of feed$ | async">
     <div class="user">
-      <img [src]="article.user.avatar" [alt]="article.user.name + 'avatar'">
+      <img [src]="article.user.avatar" [alt]="article.user.name + ' avatar'">
       {{article.user.name}}
     </div>
     <p *ngIf="article.type === 'text'">{{article.text}}</p>

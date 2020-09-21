@@ -1,11 +1,11 @@
 import { HttpInterceptor, HttpRequest, HttpHandler, HttpEvent, HttpResponse } from '@angular/common/http';
-import { DefaultUrlSerializer } from '@angular/router';
+import { DefaultUrlSerializer, Params } from '@angular/router';
 
 import { Observable, of } from 'rxjs';
 import { delay } from 'rxjs/operators';
 import { name, date, image, lorem, random } from 'faker';
 
-import { FakeFeedResponse, FeedItem } from './models';
+import { FakeFeedResponse, FeedItem, FeedFilterType } from './models';
 
 export class Interceptor implements HttpInterceptor {
 
@@ -15,7 +15,7 @@ export class Interceptor implements HttpInterceptor {
       const params = urlSerializer.parse(req.url).queryParams;
 
       const response = new HttpResponse({
-        body: this.getRandomData(+params.page || 1)
+        body: this.getRandomData(params)
       });
 
       return of(response).pipe(delay(300));
@@ -24,15 +24,23 @@ export class Interceptor implements HttpInterceptor {
     return next.handle(req);
   }
 
-  getRandomData(page: number): FakeFeedResponse {
+  getRandomData(params: Params): FakeFeedResponse {
+    const page = +params.page || 1;
+    const feedFilter = params.feedFilter;
+    const items: FeedItem[] = [];
+
+    for (let i = 0; i < 12; i++) {
+      items.push(this.getRandomDataItem(feedFilter));
+    }
+
     return {
-      nextPageURL: page <= 5 ? `/feed?page=${ page + 1 }` : null,
-      items: Array.from(Array(12), this.getRandomDataItem)
+      nextPage: page <= 5 ? page + 1 : null,
+      items
     };
   }
 
-  getRandomDataItem(): FeedItem {
-    const decide = random.boolean();
+  getRandomDataItem(feedFilter: FeedFilterType): FeedItem {
+    const decide = feedFilter ? feedFilter === 'onlyText' : random.boolean();
 
     return {
       user: {

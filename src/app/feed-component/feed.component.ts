@@ -1,22 +1,22 @@
-import { Component, OnInit, OnDestroy, ViewChild, ElementRef } from '@angular/core';
+import { Component, AfterViewInit, OnDestroy, ViewChild, ElementRef } from '@angular/core';
+import { NgForm } from '@angular/forms';
 
-import { Subscription, fromEvent } from 'rxjs';
-import { map, filter, take, repeat, delay } from 'rxjs/operators';
+import { Subscription, fromEvent, merge, defer, Observable } from 'rxjs';
+import { map, filter, take, delay, repeatWhen } from 'rxjs/operators';
 
 import { FeedService } from '../feed-service/feed.service';
+import { FeedFilter } from '../models';
 
 @Component({
   selector: 'app-feed',
   templateUrl: './feed.component.html',
   styleUrls: ['./feed.component.css']
 })
-export class FeedComponent implements OnInit, OnDestroy {
+export class FeedComponent implements AfterViewInit, OnDestroy {
 
   private subscription: Subscription;
 
-  @ViewChild('articles') articles: ElementRef;
-
-  scrollPercent$ = fromEvent(document, 'scroll')
+  private scrollPercent$: Observable<number> = fromEvent(document, 'scroll')
     .pipe(
       map(() => {
         const scrollTop = this.articles.nativeElement.getBoundingClientRect().top;
@@ -28,22 +28,32 @@ export class FeedComponent implements OnInit, OnDestroy {
       })
     );
 
-  loadMore$ = this.scrollPercent$
+  private loadMore$: Observable<number> = this.scrollPercent$
     .pipe(
       filter(percent => percent >= 80),
       take(1),
-      repeat()
+      repeatWhen(() => this.feedLoadingStops$)
     );
+
+  private filterSeed$: Observable<FeedFilter> = defer(() => merge(
+    this.loadMore$.pipe(map(() => this.form.value)),
+    this.form.valueChanges
+  ));
+
+  @ViewChild('articles') articles: ElementRef;
+  @ViewChild('form') form: NgForm;
 
   feed$ = this.feedService.feed$;
 
   loading$ = this.feedService.loading$.pipe(delay(10));
 
+  private feedLoadingStops$ = this.loading$.pipe(map(v => !v), filter(v => v));
+
   constructor(private feedService: FeedService) {
   }
 
-  ngOnInit(): void {
-    this.subscription = this.loadMore$.subscribe(this.feedService.refresh$);
+  ngAfterViewInit(): void {
+    this.subscription = this.filterSeed$.subscribe(this.feedService.filter$);
   }
 
   ngOnDestroy(): void {

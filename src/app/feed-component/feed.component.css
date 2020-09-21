@@ -8,6 +8,11 @@
   opacity: .7;
   text-align: center;
   color: #FFF;
+  padding: 8px 0;
+}
+
+.filter {
+  margin-top: 48px;
 }
 
 .articles {
