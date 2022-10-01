@@ -12,7 +12,9 @@
 }
 
 .filter {
-  margin-top: 48px;
+  margin: 20px 40px;
+  padding-bottom: 20px;
+  border-bottom: #aaa 1px solid;
 }
 
 .articles {
@@ -44,4 +46,5 @@ article p {
   height: 32px;
   margin: 10px;
   border-radius: 50%;
+  font-size: 8px;
 }
