@@ -17,8 +17,9 @@ export class FeedComponent implements AfterViewInit, OnDestroy {
   private destroy$ = new Subject<void>();
 
   loading$: Observable<boolean> = this.feedService.loading$;
-  feed$: Observable<FeedItem[]> = this.feedService.feed$
-    .pipe(scan((acc, { items, nextPage }) => nextPage === 2 ? items : acc.concat(items), []));
+  feed$: Observable<FeedItem[]> = this.feedService.feed$.pipe(
+    scan((acc, { items, nextPage }) => nextPage === 2 ? items : acc.concat(items), [])
+  );
 
   @ViewChild('form') form: NgForm;
   @ViewChildren('article') articles: QueryList<ElementRef<HTMLElement>>;
@@ -27,19 +28,17 @@ export class FeedComponent implements AfterViewInit, OnDestroy {
   }
 
   ngAfterViewInit(): void {
-    this.articles.changes
-      .pipe(
-        map(queryList => queryList.toArray().splice(-3).map(({ nativeElement }) => nativeElement)), // take the last 3 <article> tags
-        switchMap(elements => from(elements.map(el => asIntersectionObservable(el))).pipe(mergeAll())),
-        filter(({ isIntersecting }) => isIntersecting),
-        takeUntil(this.destroy$)
-      ).subscribe(this.feedService.loadMore$);
+    this.articles.changes.pipe(
+      map(queryList => queryList.toArray().splice(-3).map(({ nativeElement }) => nativeElement)), // take the last 3 <article> tags
+      switchMap(elements => from(elements.map(el => asIntersectionObservable(el))).pipe(mergeAll())),
+      filter(({ isIntersecting }) => isIntersecting),
+      takeUntil(this.destroy$)
+    ).subscribe(this.feedService.loadMore$);
 
-    this.form.valueChanges
-      .pipe(
-        map(({ feedFilter }) => feedFilter),
-        takeUntil(this.destroy$)
-      ).subscribe(this.feedService.filterChange$);
+    this.form.valueChanges.pipe(
+      map(({ feedFilter }) => feedFilter),
+      takeUntil(this.destroy$)
+    ).subscribe(this.feedService.filterChange$);
   }
 
   ngOnDestroy(): void {

@@ -19,20 +19,21 @@ export class FeedService {
   feed$: Observable<FakeFeedResponse> = this.filterChange$.pipe(
     switchMap(feedFilter => {
       this.nextPage = 1;
-      return this.loadMore$.pipe(exhaustMap(() =>
-        this.nextPage
-          ? this.http.get<FakeFeedResponse>('/feed', { params: { nextPage: this.nextPage, feedFilter } })
-            .pipe(
-              catchError(() => EMPTY),
-              tap({
-                subscribe: () => this.loadingChange$.next(true),
-                next: ({ nextPage }) => this.nextPage = nextPage,
-                finalize: () => this.loadingChange$.next(false)
-              })
-            )
+      return this.loadMore$.pipe(
+        exhaustMap(() => this.nextPage
+          ? this.http.get<FakeFeedResponse>('/feed', { params: { nextPage: this.nextPage, feedFilter } }).pipe(
+            catchError(() => EMPTY),
+            tap({
+              subscribe: () => this.loadingChange$.next(true),
+              next: ({ nextPage }) => this.nextPage = nextPage,
+              finalize: () => this.loadingChange$.next(false)
+            })
+          )
           : EMPTY
-      ));
-    }));
+        )
+      );
+    })
+  );
   loading$: Observable<boolean> = this.loadingChange$.asObservable();
 
   constructor(private http: HttpClient) {
