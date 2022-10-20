@@ -4,7 +4,7 @@ import { NgForm } from '@angular/forms';
 import { filter, from, map, mergeAll, Observable, scan, Subject, switchMap, takeUntil } from 'rxjs';
 
 import { FeedService } from '../feed-service/feed.service';
-import { asIntersectionObservable } from '../asIntersectionObservable';
+import { fromIntersectionObserver } from '../fromIntersectionObserver';
 import { FeedItem } from '../models';
 
 @Component({
@@ -30,7 +30,7 @@ export class FeedComponent implements AfterViewInit, OnDestroy {
   ngAfterViewInit(): void {
     this.articles.changes.pipe(
       map(queryList => queryList.toArray().splice(-3).map(({ nativeElement }) => nativeElement)), // take the last 3 <article> tags
-      switchMap(elements => from(elements.map(el => asIntersectionObservable(el))).pipe(mergeAll())),
+      switchMap(elements => from(elements.map(el => fromIntersectionObserver(el))).pipe(mergeAll())),
       filter(({ isIntersecting }) => isIntersecting),
       takeUntil(this.destroy$)
     ).subscribe(this.feedService.loadMore$);

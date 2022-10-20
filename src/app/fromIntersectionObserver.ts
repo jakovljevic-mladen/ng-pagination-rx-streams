@@ -1,6 +1,6 @@
 import { Observable } from 'rxjs';
 
-export function asIntersectionObservable(target: Element, options?: IntersectionObserverInit): Observable<IntersectionObserverEntry> {
+export function fromIntersectionObserver(target: Element, options?: IntersectionObserverInit): Observable<IntersectionObserverEntry> {
   return new Observable(subscriber => {
     const callback = ([entry]: IntersectionObserverEntry[]) => subscriber.next(entry);
 
