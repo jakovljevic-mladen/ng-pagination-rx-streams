@@ -1,11 +1,11 @@
-import { Component, AfterViewInit, OnDestroy, ViewChild, ElementRef } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, OnDestroy, QueryList, ViewChild, ViewChildren } from '@angular/core';
 import { NgForm } from '@angular/forms';
 
-import { Subscription, fromEvent, merge, defer, Observable } from 'rxjs';
-import { map, filter, take, delay, repeatWhen } from 'rxjs/operators';
+import { filter, from, map, mergeAll, Observable, scan, Subject, switchMap, takeUntil } from 'rxjs';
 
 import { FeedService } from '../feed-service/feed.service';
-import { FeedFilter } from '../models';
+import { fromIntersectionObserver } from '../fromIntersectionObserver';
+import { FeedItem } from '../models';
 
 @Component({
   selector: 'app-feed',
@@ -14,49 +14,39 @@ import { FeedFilter } from '../models';
 })
 export class FeedComponent implements AfterViewInit, OnDestroy {
 
-  private subscription: Subscription;
+  private destroy$ = new Subject<void>();
 
-  private scrollPercent$: Observable<number> = fromEvent(document, 'scroll')
-    .pipe(
-      map(() => {
-        const scrollTop = this.articles.nativeElement.getBoundingClientRect().top;
-        const docHeight = this.articles.nativeElement.getBoundingClientRect().height;
-        const winHeight = window.innerHeight;
-        const scroll = scrollTop / (winHeight - docHeight);
+  loading$: Observable<boolean> = this.feedService.loading$;
+  feed$: Observable<FeedItem[]> = this.feedService.feed$.pipe(
+    scan((acc, { items, nextPage }) => nextPage === 2 ? items : acc.concat(items), [])
+  );
 
-        return Math.round(scroll * 100);
-      })
-    );
-
-  private loadMore$: Observable<number> = this.scrollPercent$
-    .pipe(
-      filter(percent => percent >= 80),
-      take(1),
-      repeatWhen(() => this.feedLoadingStops$)
-    );
-
-  private filterSeed$: Observable<FeedFilter> = defer(() => merge(
-    this.loadMore$.pipe(map(() => this.form.value)),
-    this.form.valueChanges
-  ));
-
-  @ViewChild('articles') articles: ElementRef;
   @ViewChild('form') form: NgForm;
-
-  feed$ = this.feedService.feed$;
-
-  loading$ = this.feedService.loading$.pipe(delay(10));
-
-  private feedLoadingStops$ = this.loading$.pipe(map(v => !v), filter(v => v));
+  @ViewChildren('article') articles: QueryList<ElementRef<HTMLElement>>;
 
   constructor(private feedService: FeedService) {
   }
 
   ngAfterViewInit(): void {
-    this.subscription = this.filterSeed$.subscribe(this.feedService.filter$);
+    this.articles.changes.pipe(
+      map(queryList => queryList.toArray().splice(-3).map(({ nativeElement }) => nativeElement)), // take the last 3 <article> tags
+      switchMap(elements => from(elements.map(el => fromIntersectionObserver(el))).pipe(mergeAll())),
+      filter(({ isIntersecting }) => isIntersecting),
+      takeUntil(this.destroy$)
+    ).subscribe(this.feedService.loadMore$);
+
+    this.form.valueChanges.pipe(
+      map(({ feedFilter }) => feedFilter),
+      takeUntil(this.destroy$)
+    ).subscribe(this.feedService.filterChange$);
   }
 
   ngOnDestroy(): void {
-    this.subscription.unsubscribe();
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
+  trackByFeedItem(index: number, feedItem: FeedItem) {
+    return feedItem.id;
   }
 }

@@ -13,8 +13,8 @@
     </label>
   </form>
 </div>
-<div #articles class="articles">
-  <article *ngFor="let article of feed$ | async">
+<div class="articles">
+  <article #article [id]="article.id" *ngFor="let article of feed$ | async; trackBy: trackByFeedItem">
     <div class="user">
       <img [src]="article.user.avatar" [alt]="article.user.name + ' avatar'">
       {{article.user.name}}
