@@ -33,6 +33,7 @@ export class Interceptor implements HttpInterceptor {
     }
 
     return {
+      page,
       nextPage: page <= 5 ? page + 1 : null,
       items
     };

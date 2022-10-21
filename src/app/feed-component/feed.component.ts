@@ -18,7 +18,7 @@ export class FeedComponent implements AfterViewInit, OnDestroy {
 
   loading$: Observable<boolean> = this.feedService.loading$;
   feed$: Observable<FeedItem[]> = this.feedService.feed$.pipe(
-    scan((acc, { items, nextPage }) => nextPage === 2 ? items : acc.concat(items), [])
+    scan((acc, { items, page }) => page === 1 ? items : acc.concat(items), [])
   );
 
   @ViewChild('form') form: NgForm;
