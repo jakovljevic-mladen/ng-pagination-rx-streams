@@ -14,14 +14,14 @@
   </form>
 </div>
 <div class="articles">
-  <article #article [id]="article.id" *ngFor="let article of feed$ | async; trackBy: trackByFeedItem">
+  <article #article [id]="item.id" *ngFor="let item of feed$ | async; trackBy: trackByFeedItem">
     <div class="user">
-      <img [src]="article.user.avatar" [alt]="article.user.name + ' avatar'">
-      {{article.user.name}}
+      <img [src]="item.user.avatar" [alt]="item.user.name + ' avatar'">
+      {{item.user.name}}
     </div>
-    <p *ngIf="article.type === 'text'">{{article.text}}</p>
-    <img *ngIf="article.type === 'image'"
-         [src]="article.imageURL"
-         [alt]="article.imageURL">
+    <p *ngIf="item.type === 'text'">{{item.text}}</p>
+    <img *ngIf="item.type === 'image'"
+         [src]="item.imageURL"
+         [alt]="item.imageURL">
   </article>
 </div>
