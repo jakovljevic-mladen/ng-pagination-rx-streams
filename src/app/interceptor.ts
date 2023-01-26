@@ -40,7 +40,7 @@ export class Interceptor implements HttpInterceptor {
   }
 
   getRandomDataItem(id: string, feedFilter: FeedFilterType): FeedItem {
-    const decide = feedFilter ? feedFilter === 'onlyText' : faker.datatype.boolean();
+    const text = feedFilter ? feedFilter === 'onlyText' : faker.datatype.boolean();
 
     return {
       id,
@@ -48,10 +48,10 @@ export class Interceptor implements HttpInterceptor {
         name: faker.name.firstName() + ' ' + faker.name.lastName(),
         avatar: faker.image.avatar()
       },
-      type: decide ? 'text' : 'image',
+      type: text ? 'text' : 'image',
       created: faker.date.past(),
-      text: decide ? faker.lorem.sentences(5) : undefined,
-      imageURL: decide ? undefined : faker.image.image()
+      text: text ? faker.lorem.sentences(5) : undefined,
+      imageURL: text ? undefined : faker.image.image()
     };
   }
 }
