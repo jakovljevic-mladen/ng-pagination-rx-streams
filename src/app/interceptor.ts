@@ -1,6 +1,6 @@
 import { HttpEvent, HttpHandler, HttpInterceptor, HttpParams, HttpRequest, HttpResponse } from '@angular/common/http';
 
-import { Observable, of } from 'rxjs';
+import { Observable, of, throwError, concat, timer, ignoreElements } from 'rxjs';
 import { delay } from 'rxjs/operators';
 import { faker } from '@faker-js/faker';
 
@@ -14,6 +14,15 @@ export class Interceptor implements HttpInterceptor {
       const body = this.getRandomData(params);
 
       const response = new HttpResponse({ body });
+
+      const nextPage = +req.params.get('nextPage');
+
+      if (nextPage > 1 && Math.random() < 0.2) { // 20 % chance to fail
+        return concat(
+          timer(1_000).pipe(ignoreElements()),
+          throwError(() => new Error('Fake error occurred'))
+        );
+      }
 
       return of(response).pipe(delay(300));
     }

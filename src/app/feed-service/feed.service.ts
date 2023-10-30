@@ -22,10 +22,14 @@ export class FeedService {
       return this.loadMore$.pipe(
         exhaustMap(() => this.nextPage
           ? this.http.get<FakeFeedResponse>('/feed', { params: { nextPage: this.nextPage, feedFilter } }).pipe(
-            catchError(() => EMPTY),
+            catchError((error) => [{ error }]),
             tap({
               subscribe: () => this.loadingChange$.next(true),
-              next: ({ nextPage }) => this.nextPage = nextPage,
+              next: (res) => {
+                if ('nextPage' in res) {
+                  this.nextPage = res.nextPage;
+                }
+              },
               finalize: () => this.loadingChange$.next(false)
             })
           )

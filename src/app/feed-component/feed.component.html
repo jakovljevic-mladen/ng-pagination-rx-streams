@@ -24,4 +24,8 @@
          [src]="item.imageURL"
          [alt]="item.imageURL">
   </article>
+  <div #errorWrapper class="error">
+    <div *ngIf="error">{{ error }}, click here to try again.</div>
+    <div class="spacer"></div>
+  </div>
 </div>
